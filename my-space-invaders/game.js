@@ -1,6 +1,4 @@
 // @ts-nocheck
-// SPACE INVADERS - SIMPLE FIXED VERSION
-// Enemies go down and respawn at top
 
 class EventEmitter {
 	constructor() {
@@ -8,16 +6,12 @@ class EventEmitter {
 	}
 
 	on(message, listener) {
-		if (!this.listeners[message]) {
-			this.listeners[message] = [];
-		}
+		if (!this.listeners[message]) this.listeners[message] = [];
 		this.listeners[message].push(listener);
 	}
 
 	emit(message, payload = null) {
-		if (this.listeners[message]) {
-			this.listeners[message].forEach((l) => l(message, payload));
-		}
+		if (this.listeners[message]) this.listeners[message].forEach((l) => l(message, payload));
 	}
 }
 
@@ -33,9 +27,7 @@ class GameObject {
 	}
 
 	draw(ctx) {
-		if (this.img && !this.dead) {
-			ctx.drawImage(this.img, this.x, this.y, this.width, this.height);
-		}
+		if (this.img && !this.dead) ctx.drawImage(this.img, this.x, this.y, this.width, this.height);
 	}
 
 	rectFromGameObject() {
@@ -59,7 +51,7 @@ class Hero extends GameObject {
 		this.life = 3;
 		this.points = 0;
 	}
-	
+
 	fire() {
 		gameObjects.push(new Laser(this.x + 45, this.y - 10));
 		this.cooldown = 500;
@@ -67,24 +59,20 @@ class Hero extends GameObject {
 		let id = setInterval(() => {
 			if (this.cooldown > 0) {
 				this.cooldown -= 100;
-				if(this.cooldown === 0) {
-					clearInterval(id);
-				}
+				if (this.cooldown === 0) clearInterval(id);
 			}
 		}, 200);
 	}
-	
+
 	canFire() {
 		return this.cooldown === 0;
 	}
-	
+
 	decrementLife() {
 		this.life--;
-		if (this.life === 0) {
-			this.dead = true;
-		}
+		if (this.life === 0) this.dead = true;
 	}
-	
+
 	incrementPoints() {
 		this.points += 100;
 	}
@@ -96,17 +84,14 @@ class Enemy extends GameObject {
 		this.width = 98;
 		this.height = 50;
 		this.type = 'Enemy';
-		this.speed = 0.8; // Slower speed
+		this.speed = 0.8;
 	}
-	
+
 	update() {
-		// Just go down
 		this.y += this.speed;
-		
-		// If enemy reaches bottom, respawn at top
 		if (this.y > canvas.height) {
-			this.y = 50; // Respawn near top
-			this.x = Math.random() * (canvas.width - this.width); // Random X position
+			this.y = 50;
+			this.x = Math.random() * (canvas.width - this.width);
 		}
 	}
 }
@@ -120,12 +105,10 @@ class Laser extends GameObject {
 		this.img = laserImg;
 		this.speed = 10;
 	}
-	
+
 	update() {
 		this.y -= this.speed;
-		if (this.y < 0) {
-			this.dead = true;
-		}
+		if (this.y < 0) this.dead = true;
 	}
 }
 
@@ -133,9 +116,7 @@ function loadTexture(path) {
 	return new Promise((resolve) => {
 		const img = new Image();
 		img.src = path;
-		img.onload = () => {
-			resolve(img);
-		};
+		img.onload = () => resolve(img);
 	});
 }
 
@@ -160,41 +141,22 @@ let eventEmitter = new EventEmitter();
 let gameOver = false;
 let gameWin = false;
 
-// Track pressed keys for smooth movement
-let keys = {
-	ArrowLeft: false,
-	ArrowRight: false,
-	ArrowUp: false,
-	ArrowDown: false
-};
+// Track pressed keys
+let keys = { ArrowLeft: false, ArrowRight: false, ArrowUp: false, ArrowDown: false };
 
-// Keyboard handling
 window.addEventListener('keydown', (e) => {
-	if (keys.hasOwnProperty(e.key)) {
-		keys[e.key] = true;
-		e.preventDefault();
-	}
-	if (e.code === 'Space') {
-		eventEmitter.emit(Messages.KEY_EVENT_SPACE);
-		e.preventDefault();
-	}
-	if (e.key === 'r' || e.key === 'R') {
-		eventEmitter.emit(Messages.KEY_EVENT_R);
-		e.preventDefault();
-	}
+	if (keys.hasOwnProperty(e.key)) keys[e.key] = true;
+	if (e.code === 'Space') eventEmitter.emit(Messages.KEY_EVENT_SPACE);
+	if (e.key === 'r' || e.key === 'R') eventEmitter.emit(Messages.KEY_EVENT_R);
 });
 
 window.addEventListener('keyup', (e) => {
-	if (keys.hasOwnProperty(e.key)) {
-		keys[e.key] = false;
-		e.preventDefault();
-	}
+	if (keys.hasOwnProperty(e.key)) keys[e.key] = false;
 });
 
-// Handle continuous movement
 function handleInput() {
 	if (gameOver || gameWin) return;
-	
+
 	if (keys.ArrowLeft && hero.x > 0) hero.x -= 7;
 	if (keys.ArrowRight && hero.x < canvas.width - hero.width) hero.x += 7;
 	if (keys.ArrowUp && hero.y > 0) hero.y -= 5;
@@ -202,7 +164,6 @@ function handleInput() {
 }
 
 function createEnemies() {
-	// 3 rows, 5 columns - nice formation
 	for (let row = 0; row < 3; row++) {
 		for (let col = 0; col < 5; col++) {
 			const x = 200 + col * 120;
@@ -222,29 +183,20 @@ function createHero() {
 
 function updateGameObjects() {
 	if (gameOver || gameWin) return;
-	
-	// Update all objects
-	gameObjects.forEach(obj => {
-		if (obj.update) obj.update();
-	});
-	
+
+	gameObjects.forEach((obj) => { if (obj.update) obj.update(); });
+
 	const enemies = gameObjects.filter((go) => go.type === 'Enemy');
 	const lasers = gameObjects.filter((go) => go.type === 'Laser');
 
-	// Win condition
-	if (enemies.length === 0) {
-		gameWin = true;
-		return;
-	}
+	if (enemies.length === 0) { gameWin = true; return; }
 
-	// Enemy hits hero
 	enemies.forEach((enemy) => {
 		if (intersectRect(hero.rectFromGameObject(), enemy.rectFromGameObject())) {
 			eventEmitter.emit(Messages.COLLISION_ENEMY_HERO, { enemy });
 		}
 	});
-	
-	// Laser hits enemy
+
 	lasers.forEach((l) => {
 		enemies.forEach((m) => {
 			if (intersectRect(l.rectFromGameObject(), m.rectFromGameObject())) {
@@ -254,13 +206,10 @@ function updateGameObjects() {
 	});
 
 	gameObjects = gameObjects.filter((go) => !go.dead);
-	
 	if (hero.dead) gameOver = true;
 }
 
-function drawGameObjects(ctx) {
-	gameObjects.forEach((go) => go.draw(ctx));
-}
+function drawGameObjects(ctx) { gameObjects.forEach((go) => go.draw(ctx)); }
 
 function drawLife() {
 	for (let i = 0; i < hero.life; i++) {
@@ -271,37 +220,47 @@ function drawLife() {
 function drawPoints() {
 	ctx.font = '30px Arial';
 	ctx.fillStyle = 'white';
-	ctx.fillText('Score: ' + hero.points, 10, canvas.height - 60);
+	ctx.textAlign = 'left';
+	const padding = 20; // move it right to avoid cutting
+	ctx.fillText('Score: ' + hero.points, padding, canvas.height - 60);
 }
 
 function drawGameOverScreen() {
 	ctx.fillStyle = 'rgba(0, 0, 0, 0.8)';
 	ctx.fillRect(0, 0, canvas.width, canvas.height);
-	
+
+
+	// Center "GAME OVER"
 	ctx.fillStyle = '#ff4444';
 	ctx.font = '48px Arial';
 	ctx.textAlign = 'center';
-	ctx.fillText('GAME OVER', canvas.width/2, canvas.height/2 - 40);
-	
+	ctx.fillText('GAME OVER', canvas.width / 2, canvas.height / 2 - 40);
+
+	// Center "Final Score"
 	ctx.fillStyle = 'white';
 	ctx.font = '24px Arial';
-	ctx.fillText('Final Score: ' + hero.points, canvas.width/2, canvas.height/2 + 20);
-	ctx.fillText('Press R to Restart', canvas.width/2, canvas.height/2 + 60);
+	ctx.fillText('Final Score: ' + hero.points, canvas.width / 2, canvas.height / 2 + 20);
+
+	ctx.fillText('Press R to Restart', canvas.width / 2, canvas.height / 2 + 60);
 }
 
 function drawWinScreen() {
 	ctx.fillStyle = 'rgba(0, 0, 0, 0.8)';
 	ctx.fillRect(0, 0, canvas.width, canvas.height);
-	
+
+
+	// Center "VICTORY!"
 	ctx.fillStyle = '#00ff00';
 	ctx.font = '48px Arial';
 	ctx.textAlign = 'center';
-	ctx.fillText('VICTORY!', canvas.width/2, canvas.height/2 - 40);
-	
+	ctx.fillText('VICTORY!', canvas.width / 2, canvas.height / 2 - 40);
+
+	// Center "Final Score"
 	ctx.fillStyle = 'white';
 	ctx.font = '24px Arial';
-	ctx.fillText('Final Score: ' + hero.points, canvas.width/2, canvas.height/2 + 20);
-	ctx.fillText('Press R to Play Again', canvas.width/2, canvas.height/2 + 60);
+	ctx.fillText('Final Score: ' + hero.points, canvas.width / 2, canvas.height / 2 + 20);
+
+	ctx.fillText('Press R to Play Again', canvas.width / 2, canvas.height / 2 + 60);
 }
 
 function resetGame() {
@@ -325,52 +284,45 @@ function initGame() {
 		enemy.dead = true;
 		hero.decrementLife();
 	});
-	
+
 	eventEmitter.on(Messages.KEY_EVENT_SPACE, () => {
-		if (!gameOver && !gameWin && hero.canFire()) {
-			hero.fire();
-		}
+		if (!gameOver && !gameWin && hero.canFire()) hero.fire();
 	});
-	
-	eventEmitter.on(Messages.KEY_EVENT_R, () => {
-		resetGame();
-	});
+
+	eventEmitter.on(Messages.KEY_EVENT_R, () => resetGame());
 }
 
 window.onload = async () => {
 	canvas = document.getElementById('canvas');
 	ctx = canvas.getContext('2d');
-	
+
 	canvas.width = 1000;
 	canvas.height = 700;
-	
+
 	heroImg = await loadTexture('assets/player.png');
 	enemyImg = await loadTexture('assets/enemyShip.png');
 	laserImg = await loadTexture('assets/laserRed.png');
 	lifeImg = await loadTexture('assets/life.png');
 
 	initGame();
-	
+
 	function gameLoop() {
 		handleInput();
-		
 		ctx.clearRect(0, 0, canvas.width, canvas.height);
 		ctx.fillStyle = 'black';
 		ctx.fillRect(0, 0, canvas.width, canvas.height);
-		
-		if (gameOver) {
-			drawGameOverScreen();
-		} else if (gameWin) {
-			drawWinScreen();
-		} else {
-			updateGameObjects();
-			drawGameObjects(ctx);
-			drawPoints();
-			drawLife();
-		}
-		
+
+		if (gameOver) drawGameOverScreen();
+		else if (gameWin) drawWinScreen();
+		else {
+	updateGameObjects();
+	drawGameObjects(ctx);
+	drawPoints();  // <-- corner score
+	drawLife();
+}	
+
 		requestAnimationFrame(gameLoop);
 	}
-	
+
 	gameLoop();
 };
