@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Space Invaders - Final Version</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background: #111;
+            font-family: Arial, sans-serif;
+        }
+        .game-container {
+            text-align: center;
+        }
+        canvas {
+            border: 3px solid #00ff00;
+            box-shadow: 0 0 20px rgba(0, 255, 0, 0.3);
+        }
+        .controls {
+            color: white;
+            margin-top: 20px;
+            font-size: 16px;
+        }
+        .controls span {
+            color: #00ff00;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <canvas id="canvas" width="800" height="600"></canvas>
+        <div class="controls">
+            <span>LEFT RIGHT UP DOWN(ARROW KEYS) </span> Move | <span>SPACE</span> Fire | <span>R</span> Restart
+        </div>
+    </div>
+    <script src="game.js"></script>
+</body>
+</html>
